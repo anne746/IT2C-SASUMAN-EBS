@@ -4,148 +4,89 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class IT2CSASUMANBILL {
+    static Scanner scan = new Scanner(System.in);
+
+    static Customers cusConf = new Customers();
+    static Accounts accConf = new Accounts();
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        IT2CSASUMANBILL bill = new IT2CSASUMANBILL();
-        
-        String response = "";
-        int action;
-        
+        int opt;
         do {
-            System.out.println("\n1. ADD");
-            System.out.println("2. VIEW");
-            System.out.println("3. UPDATE");
-            System.out.println("4. DELETE");
-            System.out.println("5. EXIT");
-            
             try {
-                System.out.print("\nEnter Action: ");
-                action = sc.nextInt();
+                System.out.println("\n\t=== IT2CSA Billing System ===\n");
+                System.out.println("1. Customers\n"
+                        + "2. Accounts\n"
+                        + "3. Reports\n"
+                        + "4. Exit");
 
-                switch (action) {
+                System.out.print("\nEnter Option: ");
+                opt = scan.nextInt();
+                scan.nextLine();
+                System.out.println("");
+
+                switch (opt) {
                     case 1:
-                        bill.addCustomer();
+                        System.out.println("------------------------------------------------------------------");
+                        cusConf.manageCustomers(scan);
                         break;
-                    case 2:
-                        bill.viewCustomer();
-                        break;
-                    case 3:
-                        bill.updateCustomer();
-                        break;
-                    case 4:
-                        bill.deleteCustomer();
-                        break;
-                    case 5:
-                        System.out.println("Exiting...");
-                        break;
-                    default:
-                        System.out.println("Invalid option. Please try again.");
-                }
 
-                if (action != 5) {
-                    System.out.print("\nContinue (YES/NO): ");
-                    response = sc.next();
-                } else {
-                    response = "no";
+                    case 2:
+                        System.out.println("------------------------------------------------------------------");
+                        accConf.manageAccounts(scan);
+                        break;
+
+                    case 3:
+                        System.out.println("------------------------------------------------------------------");
+                        generateReport();
+                        break;
+
+                    case 4:
+                        System.out.println("Exiting...");
+                        System.out.println("------------------------------------------------------------------");
+                        break;
+
+                    default:
+                        System.out.println("Invalid Option.");
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
-                sc.nextLine();
-                action = -1;
+                scan.nextLine();
+                opt = -1;
             }
-            
-        } while (response.equalsIgnoreCase("yes"));
-        
-        System.out.println("Thank you. See you again.");
-    }
-    
-    private void addCustomer() {
-        Scanner sc = new Scanner(System.in);
-        config conf = new config();
-
-        System.out.print("\nEnter First Name: ");
-        String fname = sc.nextLine();
-        
-        System.out.print("Enter Last Name: ");
-        String lname = sc.nextLine();
-        
-        System.out.print("Enter Address: ");
-        String address = sc.nextLine();
-        
-        System.out.print("Enter Account UNIQUE ID: ");
-        String accid = sc.nextLine();
-        
-        System.out.print("Units Consumed (kWh): ");
-        String kwh = sc.nextLine();
-        System.out.println("");
-        
-        String sql = "INSERT INTO tbl_customer (c_fname, c_lname, c_address, c_accid, c_unitKWH) VALUES (?, ?, ?, ?, ?)";
-        conf.addRecord(sql, fname, lname, address, accid, kwh);
-        
+        } while (opt != 4);
     }
 
-    private void viewCustomer() {
-        System.out.println("");
-        String aqry = "SELECT * FROM tbl_customer";
-        String[] headers = {"ID", "First Name", "Last Name", "Address", "Acc Unique ID", "Units (kWh)"};
-        String[] columns = {"id", "c_fname", "c_lname", "c_address", "c_accid", "c_unitKWH"};
-        
-        config conf = new config();
-        conf.viewRecords(aqry, 25, headers, columns);
-    }
-
-    private void updateCustomer() {
-        Scanner sc = new Scanner(System.in);
+    private static void generateReport() {
         config conf = new config();
 
-        System.out.print("\nEnter Customer ID to update: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+        cusConf.viewCustomers("SELECT * FROM tbl_customers");
 
-        if (!conf.doesIDExist("tbl_customer", id)) {
-            System.out.println("Customer ID doesn't exist.");
-            return;
-        }
-        
-        System.out.println("Updating details for Customer ID: " + id);
-        
-        System.out.print("\nNew First Name: ");
-        String fname = sc.nextLine();
+        int id;
+        do {
+            System.out.print("\nEnter Customer ID: ");
+            id = scan.nextInt();
+            if (!conf.doesIDExist("tbl_customers", id)) {
+                System.out.println("Customer ID Doesn't Exist.");
+            }
+        } while (!conf.doesIDExist("tbl_customers", id));
 
-        System.out.print("New Last Name: ");
-        String lname = sc.nextLine();
-        
-        System.out.print("New Address: ");
-        String address = sc.nextLine();
-        
-        System.out.print("New Account UNIQUE ID: ");
-        String accid = sc.nextLine();
-        
-        System.out.print("New Units Consumed (kWh): ");
-        String kwh = sc.nextLine();
-        
-        System.out.println("");
-        String sql = "UPDATE tbl_customer SET c_fname = ?, c_lname = ?, c_address = ?, c_accid = ?, c_unitKWH = ? WHERE id = ?";
-        conf.updateRecord(sql, fname, lname, address, accid, kwh, id);
-        
-    }
+        String fname = conf.getDataFromID("tbl_customers", id, "c_fname");
+        String lname = conf.getDataFromID("tbl_customers", id, "c_lname");
+        String name = fname + " " + lname;
+        String address = conf.getDataFromID("tbl_customers", id, "c_address");
 
-    private void deleteCustomer() {
-        Scanner sc = new Scanner(System.in);
-        config conf = new config();
-
-        System.out.print("\nEnter Customer ID to delete: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+        System.out.printf("\n%72s\n\n", "=== INDIVIDUAL REPORT ===");
+        System.out.println("Customer ID   : " + id); 
+        System.out.println("Customer Name : " + name);
+        System.out.println("Address       : " + address);
         
-        if (!conf.doesIDExist("tbl_customer", id)) {
-            System.out.println("Customer ID doesn't exist.");
-            return;
-        }
-        
-        String sql = "DELETE FROM tbl_customer WHERE id = ?";
-        conf.deleteRecord(sql, id);
-        
+        System.out.println("\nAccounts:");
+        String sql = "SELECT acc.id, acc.unit_kwh "
+                + "FROM tbl_accounts acc "
+                + "JOIN tbl_customers cus ON acc.c_id = cus.id "
+                + "WHERE cus.id = " + id;
+        String[] columnHeaders = {"Account ID", "Energy Consumption (kWh)"};
+        String[] columnNames = {"id", "unit_kwh"};
+        conf.viewRecords(sql, columnHeaders, columnNames);
     }
 }

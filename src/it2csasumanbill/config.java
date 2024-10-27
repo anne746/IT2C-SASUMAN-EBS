@@ -25,7 +25,7 @@ public class config {
     }
     
     // Dynamic view method to display records from any table
-    public void viewRecords(String sqlQuery, int spacing, String[] columnHeaders, String[] columnNames) {
+    public void viewRecords(String sqlQuery, String[] columnHeaders, String[] columnNames) {
         
         if (columnHeaders.length != columnNames.length) {
             System.out.println("Error: Mismatch between column headers and column names.");
@@ -37,6 +37,7 @@ public class config {
             ResultSet rs = pstmt.executeQuery()) {        
             
             StringBuilder headerLine = new StringBuilder();
+            int spacing = 25;
             
             int lineLength = columnHeaders.length * (spacing + 3) + 1;
             
@@ -180,5 +181,23 @@ public class config {
         return false;
     }
     
+    public String getDataFromID(String table, int id, String column){
+        String findID = "SELECT " + column + " FROM " + table + " WHERE id = ?";
+        String data = "";
+        
+        try (Connection con = connectDB();      
+            PreparedStatement pst = con.prepareStatement(findID)){
+            
+            pst.setInt(1, id);
+            try (ResultSet rs = pst.executeQuery()) {
+                data = rs.getString(column);
+            }
+                               
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+        
+        return data;
+    }
 }
 

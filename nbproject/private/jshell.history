@@ -1,0 +1,3 @@
+EXPRESSION#>javac -d build/classes src/com/example/Main.java\
+	java -cp build/classes com.example.Main
+EXPRESSION#>javac -d build/classes src/com/example/Main.java
